@@ -1,5 +1,5 @@
 import { Form, Formik, Field, useField, ErrorMessage } from 'formik';
-import { TextField, Checkbox, FormControlLabel, CheckboxProps, FormGroup, Box } from '@material-ui/core';
+import { Button, TextField, Checkbox, FormControlLabel, CheckboxProps, FormGroup, Box } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 //Fomikにあてるフォーム用のデータ構造
 import { VtuberDetails } from '../interfaces/vtuberdetails';
@@ -44,11 +44,21 @@ const FormDemo = () => {
                     )
                 }
 
-                initialValues={initialValues} onSubmit={() => { }}>
+                initialValues={initialValues} onSubmit={(values, formikHelpers) => {
+                    return new Promise((res, rej) => {
+                        setTimeout(() => {
+                            console.log(values);
+                            console.log(formikHelpers);
+                            console.log('---------');
+                            res();
+                        }, 3000); // submit押下したときにsetTimeoutで3秒後に１回だけ実行させる
+                    })
+
+                }}>
 
 
-
-                {({ values, errors, touched }) => (
+                {/* isSubmitting, isValidatingを追加 */}
+                {({ values, errors, touched, isValid, isValidating, isSubmitting }) => (
                     <Form>
                         <Box mb={2}>
                             <FormGroup>
@@ -103,12 +113,19 @@ const FormDemo = () => {
                                 <MyCheckbox name="inAction" label="inAction" />
                             </FormGroup>
                         </Box>
+
+                        <Button type="submit" variant="contained" color="primary" disabled={!isValid || isValidating || isSubmitting} >Submit</Button>
+
                         <pre>{JSON.stringify(values, null, 4)}</pre>
                         {/* バリデーション状況の出力*/}
                         <pre>{JSON.stringify(errors, null, 4)}</pre>
 
                         {/* touched状況の出力*/}
                         <pre>{JSON.stringify(touched, null, 4)}</pre>
+
+                        <p>isValid:{isValid.toString()}</p>
+                        <p>isValidating:{isValidating.toString()}</p>
+                        <p>isSubmitting:{isSubmitting.toString()}</p>
                     </Form>
                 )}
             </Formik>
