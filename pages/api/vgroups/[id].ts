@@ -1,12 +1,18 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import sqlite3 from 'sqlite3';
+import { open } from 'sqlite';
 
-export default function getVtuberById(req: NextApiRequest, res: NextApiResponse) {
+export default async function getVtubersByVgroupId(req: NextApiRequest, res: NextApiResponse) {
 
-    res.json(
+    const db = await open(
         {
-            //urlのクエリストリング「id」の値を取得
-            byId: req.query.id,
-            message: 'getVtuberById'
+            filename: './mydb.sqlite',
+            driver: sqlite3.Database
         }
     );
+
+    //vgroupIdが同じものをpersonテーブルからとってくる
+    const vtubers = await db.all('select * from person where vgroupId = ?', [req.query.id]);
+
+    res.json(vtubers);
 }
