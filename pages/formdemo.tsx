@@ -1,8 +1,12 @@
-import { Form, Formik, Field, useField } from 'formik';
+import { Form, Formik, Field, useField, ErrorMessage } from 'formik';
 import { TextField, Checkbox, FormControlLabel, CheckboxProps, FormGroup, Box } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 //Fomikにあてるフォーム用のデータ構造
 import { VtuberDetails } from '../interfaces/vtuberdetails';
+
+
+//yup関連
+import { object, string, number, boolean, array, mixed } from 'yup';
 
 
 //Formik用データ構造初期値
@@ -20,12 +24,38 @@ const FormDemo = () => {
     return (
         <div>
             {/*入力フォームにFormikを利用する */}
-            <Formik initialValues={initialValues} onSubmit={() => { }}>
-                {({ values }) => (
+            <Formik
+                validationSchema={
+                    object(
+                        {
+                            fullName: string().required().min(2).max(16),
+                            height: number().required().min(0),
+                            language: array(string().oneOf(['japanese', 'english', 'other'])).min(1), //どれか１つを必ずチェック＋チェックボックスの値であること
+                            details: mixed().when('language', {
+                                is: (language: string[]) => language.find(data => data === 'other'), //条件をここに書く
+                                then: string().required().min(2), //2文字以上何か記入必須
+                                otherwise: string()
+                            }),
+
+                            groupid: number().required().min(0).max(5),
+                            inAction: boolean().oneOf([true]), //チェック必須
+
+                        }
+                    )
+                }
+
+                initialValues={initialValues} onSubmit={() => { }}>
+
+
+
+                {({ values, errors, touched }) => (
                     <Form>
                         <Box mb={2}>
                             <FormGroup>
                                 <Field name="fullName" as={TextField} label="Full Name" />
+
+                                {/* ErrorMessageで表示制御*/}
+                                <ErrorMessage name="fullName" />
                             </FormGroup>
                         </Box>
 
@@ -36,7 +66,6 @@ const FormDemo = () => {
                                 <Field name="height" as={TextField} type="number" label="height" />
                             </FormGroup>
                         </Box>
-
 
                         <Box marginBottom={2}>
                             <FormGroup>
@@ -75,6 +104,11 @@ const FormDemo = () => {
                             </FormGroup>
                         </Box>
                         <pre>{JSON.stringify(values, null, 4)}</pre>
+                        {/* バリデーション状況の出力*/}
+                        <pre>{JSON.stringify(errors, null, 4)}</pre>
+
+                        {/* touched状況の出力*/}
+                        <pre>{JSON.stringify(touched, null, 4)}</pre>
                     </Form>
                 )}
             </Formik>
